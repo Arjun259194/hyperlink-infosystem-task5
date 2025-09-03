@@ -5,8 +5,12 @@ config()
 
 const envschema = z.object({
   PORT: z.coerce.number().int(),
-  DATABASE_URI: z.string()
+  DATABASE_URI: z.string(), 
+  KEY: z.string().min(32),
+  IV: z.string().min(12),
+  JWT_SECRET: z.string()
 })
+
 
 
 export const env = envschema.parse(process.env)
