@@ -8,6 +8,7 @@ import connectDB from "./database/index.js"
 import { globalErrorHandler } from "./middleware/globalErrorHandler.js"
 import decryptRequest from "./middleware/dec.js"
 import verifyToken from "./middleware/jwt.js"
+import userRouter from "./modules/v1/user/routes/index.js"
 
 const app = express()
 
@@ -24,11 +25,11 @@ if (process.env.NODE_ENV !== "production") app.use(logger)
 const v1 = express.Router()
 
 v1.use("/auth", decryptRequest, authRouter)
+v1.use("/user", decryptRequest, verifyToken, userRouter)
 
 app.use("/api/v1", v1)
 
 app.get("/test", decryptRequest, verifyToken, (req, res) => {
-  
   res.status(200).json({
     body: req.body, 
     userid: req.userId

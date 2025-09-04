@@ -11,7 +11,10 @@ import ErrorResponse from "./globalErrorHandler.js"
  * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
  */
 export default async function decryptRequest(req, _, next) {
-  if(!req.body) next()
+  if(!req.body || req.body === undefined || req.body === null) {
+    next()
+    return
+  }
   const isValidBody = await z.string().min(1).safeParseAsync(req.body)
   if (!isValidBody.success) {
     throw new ErrorResponse("Not valid request body", 400)
@@ -23,12 +26,11 @@ export default async function decryptRequest(req, _, next) {
     const rawBody = isValidBody.data
     const jsonstr = Encryption.decrypt(rawBody.trim())
     body = JSON.parse(jsonstr)
+  req.body = body
+  next()
   } catch (err) {
     console.log(`Error while decrypting request body: ${err}`)
     throw new ErrorResponse("Failed to decrypt request body", 400)
   }
 
-  req.body = body
-
-  next()
 }
