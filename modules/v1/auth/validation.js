@@ -1,4 +1,5 @@
 import z from "zod"
+import ErrorResponse from "../../../middleware/globalErrorHandler.js"
 
 /**
  * User schema definition separate from class for JSDoc inference.
@@ -56,6 +57,26 @@ export class UserJson {
         400
       )
     /** @type {UserData} */
+    this.data = parsedData.data
+  }
+}
+
+
+export class LoginJson {
+  #schema = UserSchema.pick({
+    password: true, 
+    email: true
+  })
+
+  constructor(data) {
+    const parsedData = this.#schema.safeParse(data)
+    if (!parsedData.success)
+      throw new ErrorResponse(
+        `Not valid login data in request: ${parsedData.error.issues[0].message}`,
+        400
+      )
+    
+    /** @type {{email: string, password: string}} */
     this.data = parsedData.data
   }
 }

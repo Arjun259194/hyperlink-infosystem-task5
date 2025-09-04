@@ -4,7 +4,6 @@ import ErrorResponse from "../../../../middleware/globalErrorHandler.js"
 /**
  *
  * @param {string} email
- * @returns {Promise<User | null>}
  */
 export async function FindUserByEmail(email) {
   return await User.findOne({ email }).exec()

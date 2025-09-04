@@ -7,12 +7,12 @@ import logger from "./middleware/log.js"
 import connectDB from "./database/index.js"
 import { globalErrorHandler } from "./middleware/globalErrorHandler.js"
 import decryptRequest from "./middleware/dec.js"
+import verifyToken from "./middleware/jwt.js"
 
 const app = express()
 
 await connectDB(env.DATABASE_URI)
 
-app.use(globalErrorHandler)
 
 app.use(cookieParser())
 app.use(cors())
@@ -27,8 +27,14 @@ v1.use("/auth", decryptRequest, authRouter)
 
 app.use("/api/v1", v1)
 
-app.get("/test", decryptRequest, (req, res) => {
-  res.status(200).send(req.body)
+app.get("/test", decryptRequest, verifyToken, (req, res) => {
+  
+  res.status(200).json({
+    body: req.body, 
+    userid: req.userId
+  })
 })
+
+app.use(globalErrorHandler)
 
 app.listen(env.PORT, () => console.log(`\t\t- Server running on http://localhost:${env.PORT}`))

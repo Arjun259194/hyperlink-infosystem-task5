@@ -1,3 +1,5 @@
+import { success } from "zod";
+
 /**
  * Global error handling middleware for Express.
  * Catches errors thrown or passed via next(err) from any route.
@@ -13,7 +15,11 @@ export function globalErrorHandler(err, _res, res, _next) {
   const code = err.code || 500
   const msg = err.message || "Internal Server Error";
 
-  res.status(code).json({ error: msg });
+  res.status(code).json({
+    code, 
+    message: msg, 
+    success: false
+  });
 }
 
 

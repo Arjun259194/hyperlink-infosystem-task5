@@ -11,6 +11,7 @@ import ErrorResponse from "./globalErrorHandler.js"
  * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
  */
 export default async function decryptRequest(req, _, next) {
+  if(!req.body) next()
   const isValidBody = await z.string().min(1).safeParseAsync(req.body)
   if (!isValidBody.success) {
     throw new ErrorResponse("Not valid request body", 400)
