@@ -5,10 +5,10 @@ export class JwtToken {
   /**
    *
    * @param {{id: string}} payload
-   * @returns {string}
+   * @returns {Promise<string>}
    */
   static async new(payload) {
-    return jwt.sign(payload, env.JWT_SECRET, {
+    return await jwt.sign(payload, env.JWT_SECRET, {
       expiresIn: "1d",
     })
   }

@@ -59,9 +59,11 @@ export default class AuthController {
       throw new ErrorResponse("Invalid credentials", 401)
     }
 
-    const token = JwtToken.new({
+    const token = await JwtToken.new({
       id: user._id.toString()
     })
+
+    console.log("token:", token)
 
     const encres = Encryption.encrypt(
       JSON.stringify({
@@ -91,5 +93,7 @@ export default class AuthController {
    *
    * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
    */
-  static async logout(req, res) {}
+  static async logout(_, res) {
+    res.clearCookie("auth").sendStatus(200)
+  }
 }
