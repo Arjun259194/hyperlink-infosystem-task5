@@ -5,47 +5,30 @@ import cors from "cors"
 import authRouter from "./modules/v1/auth/routes/index.js"
 import logger from "./middleware/log.js"
 import connectDB from "./database/index.js"
-import Encryption from "./libs/enc.js"
 import { globalErrorHandler } from "./middleware/globalErrorHandler.js"
+import decryptRequest from "./middleware/dec.js"
 
 const app = express()
 
-connectDB(env.DATABASE_URI)
+await connectDB(env.DATABASE_URI)
 
 app.use(globalErrorHandler)
 
-if (process.env.NODE_ENV !== "production") app.use(logger)
 app.use(cookieParser())
 app.use(cors())
-app.use(express.json())
-app.use(express.text())
-app.use(
-  express.urlencoded({
-    extended: true,
-  })
-)
+app.use(express.text({ type: "text/*" }))
+// app.use(express.urlencoded({ extended: true, }))
+
+if (process.env.NODE_ENV !== "production") app.use(logger)
 
 const v1 = express.Router()
 
-v1.use("/auth", authRouter)
+v1.use("/auth", decryptRequest, authRouter)
 
 app.use("/api/v1", v1)
 
-app.get("/test", (req, res) => {
-  const text = JSON.stringify({
-    message: "Hello world",
-    age: 20,
-    x: 0,
-    y: [1, 2, 3],
-    something: {
-      isMatch: true,
-    },
-  })
-  const enc = Encryption.encrypt(text)
-  console.log(`encrypted message: ${enc}`)
-  const dec = Encryption.decrypt(enc)
-  console.log(`decrypted message: ${dec}`)
-  res.status(200).json(JSON.parse(dec))
+app.get("/test", decryptRequest, (req, res) => {
+  res.status(200).send(req.body)
 })
 
-app.listen(env.PORT, () => console.log(`\n\t\t- Server running on http://localhost:${env.PORT}`))
+app.listen(env.PORT, () => console.log(`\t\t- Server running on http://localhost:${env.PORT}`))

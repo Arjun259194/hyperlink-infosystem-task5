@@ -1,10 +1,31 @@
 import User from "../../../../database/User.js"
+import ErrorResponse from "../../../../middleware/globalErrorHandler.js"
 
+/**
+ *
+ * @param {string} email
+ * @returns {Promise<User | null>}
+ */
 export async function FindUserByEmail(email) {
   return await User.findOne({ email }).exec()
 }
 
-export async function NewUser(data) {
-  const user = new User(data)
-  await user.save()
+/**
+ *
+ * @param {import("../validation.js").UserJson} userjson
+ * @returns {Promise<User>}
+ */
+export async function NewUser(userjson) {
+  const user = new User(userjson.data)
+
+  await user.validate().catch((err) => {
+    console.log("Error while validating user: " + err)
+    throw new ErrorResponse("not valid data for database schema: " + err.message, 422)
+  })
+
+  await user.save().catch(err => {
+    console.log(`Error while saving user in db: ${err.message}`)
+    throw new ErrorResponse("Failed to save user in database", 500)
+  })
+  return user
 }
