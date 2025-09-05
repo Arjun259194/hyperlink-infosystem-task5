@@ -10,6 +10,7 @@ import decryptRequest from "./middleware/dec.js"
 import verifyToken from "./middleware/jwt.js"
 import userRouter from "./modules/v1/user/routes/index.js"
 import countryRouter from "./modules/v1/country/routes/index.js"
+import postRouter from "./modules/v1/post/routes/index.js"
 
 const app = express()
 
@@ -27,6 +28,7 @@ const v1 = express.Router()
 
 v1.use("/auth", decryptRequest, authRouter)
 v1.use("/user", decryptRequest, verifyToken, userRouter)
+v1.use("/post", decryptRequest, verifyToken, postRouter)
 v1.use("/countries", countryRouter)
 
 app.use("/api/v1", v1)

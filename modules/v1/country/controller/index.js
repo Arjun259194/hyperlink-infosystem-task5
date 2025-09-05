@@ -2,7 +2,6 @@ import Encryption from "../../../../libs/enc.js";
 import { GetAllCountries } from "../model/index.js";
 
 export default class CountryController {
-
   /**
    *
    * @param {import('express').Request} req - The Express request object, contains post data in req.body.

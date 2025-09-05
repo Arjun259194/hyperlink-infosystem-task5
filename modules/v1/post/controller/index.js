@@ -1,17 +1,16 @@
 import Encryption from "../../../../libs/enc.js"
-import ErrorResponse from "../../../../middleware/globalErrorHandler.js"
 import {
-  FindAndDeleteUserById,
-  FindUserById,
-  FindUserByIdAndUpdate,
-  GetUsersPagination,
-  SearchUser,
+  DeletePostById,
+  FindPostById,
+  FindPostByIdAndUpdate,
+  GetPostPagination,
+  NewPost,
 } from "../model/index.js"
-import { UserUpdate } from "../validation.js"
+import { PostJson, PostUpdateJson } from "../validation.js"
+import ErrorResponse from "../../../../middleware/globalErrorHandler.js"
 import { PaginationQuery } from "../../validation.js"
-import z from "zod"
 
-export default class UserController {
+export default class PostController {
   /**
    *
    * @param {import('express').Request} req - The Express request object, contains post data in req.body.
@@ -19,25 +18,30 @@ export default class UserController {
    *
    * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
    */
-  static async profile(req, res) {
+  static async create(req, res) {
     const userId = req.userId
     if (!userId) throw new ErrorResponse("User ID missing from token", 401)
 
-    const user = await FindUserById(userId)
-    if (!user) throw new ErrorResponse("User not found", 404)
+    if (!req.body) throw new ErrorResponse("No body provided in request header ")
+
+    const postjson = new PostJson({ ...req.body, user_id: userId })
+
+    const post = await NewPost(postjson)
+
+    const { password, ...postres } = post
 
     const encres = Encryption.encrypt(
       JSON.stringify({
-        code: 200,
+        code: 201,
         success: true,
-        message: "User found",
+        message: "Post created",
         data: {
-          user: user.toObject(),
+          post: postres,
         },
       })
     )
 
-    res.status(200).send(encres)
+    res.status(201).send(encres)
   }
 
   /**
@@ -49,22 +53,23 @@ export default class UserController {
    */
   static async update(req, res) {
     if (!req.body) throw new ErrorResponse("No body provided in request header ")
-    const userupdate = new UserUpdate(req.body)
 
     const userId = req.userId
     if (!userId) throw new ErrorResponse("User ID missing from token", 401)
 
-    console.log("request body data: " + userupdate.data)
+    const postupdate = new PostUpdateJson({ ...req.body, user_id: userId })
 
-    const updateduser = await FindUserByIdAndUpdate(userId, userupdate)
+    console.log("request body data: " + postupdate.data)
+
+    const updatedpost = await FindPostByIdAndUpdate(postupdate)
 
     const encres = Encryption.encrypt(
       JSON.stringify({
         code: 200,
         success: true,
-        message: "User Updated",
+        message: "Post Updated",
         data: {
-          user: updateduser,
+          post: updatedpost,
         },
       })
     )
@@ -81,20 +86,20 @@ export default class UserController {
    *
    * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
    */
-  static async getUsers(req, res) {
-    const pagination = new PaginationQuery(req.query)
-    const users = await GetUsersPagination(pagination)
-    if (users.length <= 0) throw new ErrorResponse("No User Found", 404)
+  static async getPost(req, res) {
+    const id = req.params.id
+    if (!id || id === "" || id.length <= 0)
+      new ErrorResponse("bad request, user id not found or valid", 400)
+
+    const post = await FindPostById(id)
+    if (!post) throw new ErrorResponse("Post not found")
 
     const encres = Encryption.encrypt(
       JSON.stringify({
         code: 200,
-        message: "Users found",
         success: true,
-        ...pagination.data,
-        data: {
-          users,
-        },
+        message: "Post found",
+        data: { post },
       })
     )
 
@@ -108,24 +113,19 @@ export default class UserController {
    *
    * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
    */
-  static async search(req, res) {
-    const queryparsed = z.string().min(1).safeParse(req.query?.q)
-    if (!queryparsed.success) {
-      throw new ErrorResponse(queryparsed.error.issues[0].message, 400)
-    }
-
-    const search = queryparsed.data
-
-    const users = await SearchUser(search)
-    if (users.length <= 0) throw new ErrorResponse("No User Found", 404)
+  static async getAllPost(req, res) {
+    const pagination = new PaginationQuery(req.query)
+    const posts = await GetPostPagination(pagination)
+    if (posts.length <= 0) throw new ErrorResponse("No Post Found", 404)
 
     const encres = Encryption.encrypt(
       JSON.stringify({
         code: 200,
-        message: "Users found",
+        message: "Posts found",
         success: true,
+        ...pagination.data,
         data: {
-          users,
+          posts,
         },
       })
     )
@@ -144,8 +144,11 @@ export default class UserController {
     const userId = req.userId
     if (!userId) throw new ErrorResponse("User ID missing from token", 401)
 
-    const user = await FindAndDeleteUserById(userId)
-    if (!user) throw new ErrorResponse("User not found", 404)
+    const id = req.params.id
+    if (!id || id === "" || id.length <= 0)
+      new ErrorResponse("bad request, user id not found or valid", 400)
+    const post = await DeletePostById(id, userId)
+    if(!post) throw new ErrorResponse("Post not found", 404)
 
     res.sendStatus(204)
   }

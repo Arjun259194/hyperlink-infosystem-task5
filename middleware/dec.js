@@ -15,6 +15,7 @@ export default async function decryptRequest(req, _, next) {
     next()
     return
   }
+
   const isValidBody = await z.string().min(1).safeParseAsync(req.body)
   if (!isValidBody.success) {
     throw new ErrorResponse("Not valid request body", 400)
