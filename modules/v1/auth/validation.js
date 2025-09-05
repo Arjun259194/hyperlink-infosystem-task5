@@ -30,14 +30,6 @@ export const UserSchema = z.object({
   ip: z.string().nullable().optional(),
   app_version: z.string().nullable().optional(),
   is_deleted: z.boolean().optional(),
-  createdAt: z.preprocess(
-    (arg) => (typeof arg === "string" || arg instanceof Date ? new Date(arg) : undefined),
-    z.date().optional()
-  ),
-  updatedAt: z.preprocess(
-    (arg) => (typeof arg === "string" || arg instanceof Date ? new Date(arg) : undefined),
-    z.date().optional()
-  ),
 })
 
 /**

@@ -8,9 +8,8 @@ const envschema = z.object({
   DATABASE_URI: z.string(), 
   KEY: z.string().min(32),
   IV: z.string().min(12),
-  JWT_SECRET: z.string()
+  JWT_SECRET: z.string(), 
+  SALT: z.coerce.number().int()
 })
-
-
 
 export const env = envschema.parse(process.env)

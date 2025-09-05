@@ -1,4 +1,4 @@
-import mongoose, {model} from "mongoose"
+import mongoose, { model } from "mongoose"
 
 const UserSchema = new mongoose.Schema(
   {
@@ -26,6 +26,8 @@ const UserSchema = new mongoose.Schema(
     timestamps: true, // adds createdAt and updatedAt fields automatically
   }
 )
+
+UserSchema.index({first_name: "text", last_name: "text", email: "text"})
 
 const User = model("User", UserSchema)
 

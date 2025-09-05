@@ -1,4 +1,4 @@
-import User from "../../../../database/User.js"
+import User from "../../../../database/models/User.js"
 import ErrorResponse from "../../../../middleware/globalErrorHandler.js"
 
 /**

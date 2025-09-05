@@ -1,7 +1,8 @@
 import bcrypt from "bcrypt"
+import { env } from "../env.js";
 
 export default class PasswordHashing {
-  static saltRounds = 10
+  static saltRounds = env.SALT;
 
   static async hash(data) {
     const salt = await bcrypt.genSalt(PasswordHashing.saltRounds)

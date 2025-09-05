@@ -1,4 +1,4 @@
-import Country from "../../../../database/Country.js";
+import Country from "../../../../database/models/Country.js";
 
 export async function GetAllCountries() {
     return await Country.find().exec()

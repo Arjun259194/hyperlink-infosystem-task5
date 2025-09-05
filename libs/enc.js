@@ -5,9 +5,8 @@ export default class Encryption {
   static shaKey
 
   /**
-   * 
-   * @param {string} data 
-   * @param {number} BITS 
+   * @param {string} data
+   * @param {number} BITS
    * @returns  {string}
    */
   static encrypt(data, BITS = 32) {
@@ -18,9 +17,8 @@ export default class Encryption {
   }
 
   /**
-   * 
-   * @param {string} encryption 
-   * @param {number} BITS 
+   * @param {string} encryption
+   * @param {number} BITS
    * @returns {string}
    */
   static decrypt(encryption, BITS = 32) {
