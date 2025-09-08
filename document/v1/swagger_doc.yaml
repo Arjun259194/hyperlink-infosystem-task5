@@ -8,9 +8,9 @@ info:
     email: support@example.com
 
 servers:
-  - url: http://localhost:3000/api
+  - url: http://localhost:3000/api/v1
     description: Development server
-  - url: https://api.example.com
+  - url: https://api.example.com/v1
     description: Production server
 
 security:
@@ -28,18 +28,10 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          text/plain:
             schema:
-              $ref: '#/components/schemas/UserRegistration'
-            example:
-              login_type: "N"
-              social_id: ""
-              first_name: "John"
-              last_name: "Doe"
-              email: "john.doe@example.com"
-              password: "password123"
-              phone: "+1234567890"
-              country_code: "+1"
+              type: string
+              description: Encrypted JSON string containing user registration data
       responses:
         '201':
           description: User created successfully
@@ -47,8 +39,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                description: Encrypted JSON response containing user data
-              example: "encrypted_response_string"
+                description: Encrypted response containing user data
         '400':
           $ref: '#/components/responses/BadRequest'
         '409':
@@ -64,12 +55,10 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          text/plain:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
-            example:
-              email: "john.doe@example.com"
-              password: "password123"
+              type: string
+              description: Encrypted JSON string containing login credentials
       responses:
         '200':
           description: Login successful
@@ -77,19 +66,14 @@ paths:
             Set-Cookie:
               schema:
                 type: string
-              description: HTTP-only authentication cookie
+                example: auth=<token>; HttpOnly; Secure; Path=/
           content:
             text/plain:
               schema:
                 type: string
-                description: Encrypted JSON response with token
-              example: "encrypted_response_string"
-        '400':
-          $ref: '#/components/responses/BadRequest'
+                description: Encrypted response containing auth token
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
 
   /auth/logout:
     post:
@@ -99,38 +83,31 @@ paths:
       description: Clear authentication cookie and logout user
       responses:
         '200':
-          description: Logout successful
-          content:
-            application/json:
+          description: Logged out successfully
+          headers:
+            Set-Cookie:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Logged out successfully"
+                type: string
+                example: auth=; HttpOnly; Secure; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT
 
   # User Endpoints
-  /users:
+  /user:
     get:
       tags:
         - Users
       summary: Get users with pagination
       description: Retrieve a paginated list of users
-      security: []
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Limit'
       responses:
         '200':
-          description: Users retrieved successfully
+          description: List of users retrieved successfully
           content:
             text/plain:
               schema:
                 type: string
-                description: Encrypted JSON response containing users array
-              example: "encrypted_response_string"
-        '404':
-          $ref: '#/components/responses/NotFound'
+                description: Encrypted response containing paginated users
     delete:
       tags:
         - Users
@@ -139,47 +116,34 @@ paths:
       responses:
         '204':
           description: User deleted successfully
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
 
-  /users/search:
+  /user/search:
     get:
       tags:
         - Users
       summary: Search users
-      description: Search for users by query string
-      security: []
       parameters:
         - name: q
           in: query
           required: true
           schema:
             type: string
-            minLength: 1
-          description: Search query string
-          example: "john"
+            description: Search query string
       responses:
         '200':
-          description: Search results retrieved successfully
+          description: Search results
           content:
             text/plain:
               schema:
                 type: string
-                description: Encrypted JSON response containing search results
-              example: "encrypted_response_string"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                description: Encrypted response containing search results
 
-  /users/profile:
+  /user/profile:
     get:
       tags:
         - Users
       summary: Get user profile
-      description: Get the authenticated user's profile information
+      description: Get authenticated user's profile
       responses:
         '200':
           description: Profile retrieved successfully
@@ -187,28 +151,19 @@ paths:
             text/plain:
               schema:
                 type: string
-                description: Encrypted JSON response containing user profile
-              example: "encrypted_response_string"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
+                description: Encrypted response containing user profile
     put:
       tags:
         - Users
       summary: Update user profile
-      description: Update the authenticated user's profile information
+      description: Update authenticated user's profile
       requestBody:
         required: true
         content:
-          application/json:
+          text/plain:
             schema:
-              $ref: '#/components/schemas/UserUpdate'
-            example:
-              first_name: "Jane"
-              last_name: "Smith"
-              phone: "+1987654321"
+              type: string
+              description: Encrypted JSON containing profile updates
       responses:
         '200':
           description: Profile updated successfully
@@ -216,32 +171,21 @@ paths:
             text/plain:
               schema:
                 type: string
-                description: Encrypted JSON response containing updated user
-              example: "encrypted_response_string"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                description: Encrypted response containing updated profile
 
   # Post Endpoints
-  /posts:
+  /post:
     post:
       tags:
         - Posts
-      summary: Create a new post
-      description: Create a new post for the authenticated user
+      summary: Create new post
       requestBody:
         required: true
         content:
-          application/json:
+          text/plain:
             schema:
-              $ref: '#/components/schemas/PostCreate'
-            example:
-              title: "My First Post"
-              content: "This is the content of my first post."
-              status: "Uploaded"
+              type: string
+              description: Encrypted JSON containing post data
       responses:
         '201':
           description: Post created successfully
@@ -249,51 +193,25 @@ paths:
             text/plain:
               schema:
                 type: string
-                description: Encrypted JSON response containing created post
-              example: "encrypted_response_string"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
+                description: Encrypted response containing created post
     put:
       tags:
         - Posts
-      summary: Update a post
-      description: Update an existing post owned by the authenticated user
+      summary: Update post
       requestBody:
         required: true
         content:
-          application/json:
+          text/plain:
             schema:
-              $ref: '#/components/schemas/PostUpdate'
-            example:
-              post_id: "64a7b8c9d1e2f3a4b5c6d7e8"
-              title: "Updated Post Title"
-              content: "Updated content"
-              status: "Uploaded"
+              type: string
+              description: Encrypted JSON containing post updates
       responses:
         '200':
           description: Post updated successfully
-          content:
-            text/plain:
-              schema:
-                type: string
-                description: Encrypted JSON response containing updated post
-              example: "encrypted_response_string"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
     get:
       tags:
         - Posts
       summary: Get all posts
-      description: Retrieve a paginated list of all posts
-      security: []
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Limit'
@@ -304,62 +222,118 @@ paths:
             text/plain:
               schema:
                 type: string
-                description: Encrypted JSON response containing posts array
-              example: "encrypted_response_string"
-        '404':
-          $ref: '#/components/responses/NotFound'
+                description: Encrypted response containing posts
 
-  /posts/{id}:
+  /post/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
     get:
       tags:
         - Posts
-      summary: Get a specific post
-      description: Retrieve a single post by its ID
-      security: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Post ID
-          example: "64a7b8c9d1e2f3a4b5c6d7e8"
+      summary: Get post by ID
       responses:
         '200':
           description: Post retrieved successfully
-          content:
-            text/plain:
-              schema:
-                type: string
-                description: Encrypted JSON response containing post data
-              example: "encrypted_response_string"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
     delete:
       tags:
         - Posts
-      summary: Delete a post
-      description: Delete a post owned by the authenticated user
+      summary: Delete post
+      responses:
+        '204':
+          description: Post deleted successfully
+
+  /post/{id}/like:
+    post:
+      tags:
+        - Posts
+      summary: Like a post
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: string
-          description: Post ID
-          example: "64a7b8c9d1e2f3a4b5c6d7e8"
+      responses:
+        '200':
+          description: Post liked successfully
+
+  /post/{id}/dislike:
+    post:
+      tags:
+        - Posts
+      summary: Dislike a post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post disliked successfully
+
+  # Comment Endpoints
+  /comment:
+    post:
+      tags:
+        - Comments
+      summary: Create comment
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+              description: Encrypted JSON containing comment data
+      responses:
+        '200':
+          description: Comment created successfully
+    put:
+      tags:
+        - Comments
+      summary: Update comment
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+              description: Encrypted JSON containing comment updates
+      responses:
+        '200':
+          description: Comment updated successfully
+
+  /comment/by-id:
+    get:
+      tags:
+        - Comments
+      summary: Get comment by ID
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comment retrieved successfully
+    delete:
+      tags:
+        - Comments
+      summary: Delete comment
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
         '204':
-          description: Post deleted successfully
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
+          description: Comment deleted successfully
 
   # Country Endpoints
   /countries:
@@ -367,7 +341,6 @@ paths:
       tags:
         - Countries
       summary: Get all countries
-      description: Retrieve a list of all countries
       security: []
       responses:
         '200':
@@ -376,8 +349,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                description: Encrypted JSON response containing countries array
-              example: "encrypted_response_string"
+                description: Encrypted response containing countries list
 
 components:
   securitySchemes:
@@ -395,7 +367,6 @@ components:
         type: integer
         minimum: 1
         default: 1
-      description: Page number for pagination
       example: 1
 
     Limit:
@@ -405,7 +376,6 @@ components:
         type: integer
         minimum: 1
         default: 5
-      description: Number of items per page
       example: 10
 
   schemas:
@@ -422,67 +392,41 @@ components:
         login_type:
           type: string
           enum: [N, F, G, A]
-          description: Login type (N=Normal, F=Facebook, G=Google, A=Apple)
         social_id:
           type: string
-          description: Social media ID (empty for normal registration)
         first_name:
           type: string
-          minLength: 1
-          description: User's first name
         last_name:
           type: string
-          minLength: 1
-          description: User's last name
         email:
           type: string
           format: email
-          description: User's email address
         password:
           type: string
           minLength: 6
-          description: User's password
         country_code:
           type: string
           nullable: true
-          description: Country code for phone number
         phone:
           type: string
           nullable: true
-          description: User's phone number
         dob:
           type: string
           format: date
           nullable: true
-          description: Date of birth
         gender:
           type: string
           enum: [male, female, other]
-          description: User's gender
         latitude:
           type: number
           nullable: true
-          description: User's latitude coordinate
         longitude:
           type: number
           nullable: true
-          description: User's longitude coordinate
         profile_image:
           type: string
           format: uri
           nullable: true
-          description: URL to user's profile image
-        status:
-          type: string
-          description: User status
-        ip:
-          type: string
-          nullable: true
-          description: User's IP address
-        app_version:
-          type: string
-          nullable: true
-          description: App version user is using
 
     LoginRequest:
       type: object
@@ -493,58 +437,33 @@ components:
         email:
           type: string
           format: email
-          description: User's email address
         password:
           type: string
-          description: User's password
 
     UserUpdate:
       type: object
       properties:
-        login_type:
-          type: string
-          enum: [N, F, G, A]
-        social_id:
-          type: string
         first_name:
           type: string
         last_name:
           type: string
-        email:
-          type: string
-          format: email
         country_code:
           type: string
-          nullable: true
         phone:
           type: string
-          nullable: true
         dob:
           type: string
           format: date
-          nullable: true
         gender:
           type: string
           enum: [male, female, other]
         latitude:
           type: number
-          nullable: true
         longitude:
           type: number
-          nullable: true
         profile_image:
           type: string
-          nullable: true
-        login_status:
-          type: boolean
-        status:
-          type: string
-        ip:
-          type: string
-          nullable: true
-        app_version:
-          type: string
-          nullable: true
+          format: uri
 
     PostCreate:
       type: object
@@ -554,50 +473,58 @@ components:
       properties:
         title:
           type: string
-          description: Post title
         content:
           type: string
-          description: Post content
         status:
           type: string
           enum: [Pending, Uploaded, Removed, Unknown]
           default: Unknown
-          description: Post status
 
     PostUpdate:
       type: object
       required:
         - post_id
       properties:
-        post_id:
-          type: string
-          description: ID of the post to update
         title:
           type: string
-          description: Updated post title
         content:
           type: string
-          description: Updated post content
         status:
           type: string
           enum: [Pending, Uploaded, Removed, Unknown]
-          description: Updated post status
+
+    CommentCreate:
+      type: object
+      required:
+        - post_id
+        - content
+      properties:
+        post_id:
+          type: string
+        content:
+          type: string
+
+    CommentUpdate:
+      type: object
+      required:
+        - commentId
+        - content
+      properties:
+        commentId:
+          type: string
+        content:
+          type: string
 
     Error:
       type: object
       properties:
         code:
           type: integer
-          description: HTTP status code
+        message:
+          type: string
         success:
           type: boolean
           default: false
-        message:
-          type: string
-          description: Error message
-        data:
-          type: object
-          nullable: true
 
   responses:
     BadRequest:
@@ -606,10 +533,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-          example:
-            code: 400
-            success: false
-            message: "Not valid data in request"
 
     Unauthorized:
       description: Unauthorized - Authentication required or invalid
@@ -617,10 +540,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-          example:
-            code: 401
-            success: false
-            message: "User ID missing from token"
 
     NotFound:
       description: Not found - Resource not found
@@ -628,10 +547,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-          example:
-            code: 404
-            success: false
-            message: "Resource not found"
 
     Conflict:
       description: Conflict - Resource already exists
@@ -639,10 +554,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-          example:
-            code: 409
-            success: false
-            message: "User already exists in database"
 
 tags:
   - name: Authentication
@@ -651,5 +562,7 @@ tags:
     description: User management endpoints
   - name: Posts
     description: Post management endpoints
+  - name: Comments
+    description: Comment management endpoints  
   - name: Countries
     description: Country data endpoints
