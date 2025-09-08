@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "npx nodemon index.js --ignore encTest.mjs --ignore decTest.mjs",
+    "dev": "npx nodemon index.js --ignore ./database/seed/seed.mjs",
     "db:seed": "node ./database/seed/seed.mjs"
   },
   "keywords": [],

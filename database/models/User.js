@@ -27,7 +27,21 @@ const UserSchema = new mongoose.Schema(
   }
 )
 
-UserSchema.index({first_name: "text", last_name: "text", email: "text"})
+UserSchema.virtual("likes", {
+  ref: "Like",
+  localField: "_id",
+  foreignField: "user_id",
+  justOne: false,
+})
+
+UserSchema.virtual("comments", {
+  ref: "Comment",
+  localField: "_id",
+  foreignField: "user_id",
+  justOne: true,
+})
+
+UserSchema.index({ first_name: "text", last_name: "text", email: "text" })
 
 const User = model("User", UserSchema)
 

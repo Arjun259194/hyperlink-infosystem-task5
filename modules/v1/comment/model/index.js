@@ -21,14 +21,18 @@ export const NewComment = async ({ data: { post_id, user_id, content } }) => {
   return comment.toObject()
 }
 
-/**
- * @param {CommentUpdateJson} commentupdate
- */
-
-export const UpdateComment = async ({ data: { commentId, content } }) =>
-  await Comment.findByIdAndUpdate(commentId, { content })
+export const GetCommentById = async id =>
+  await Comment.findById(id)
     .exec()
     .catch(err => {
-      console.log(`${err}\nError while updating comment to db`)
-      throw new ErrorResponse("Failed to update comment in db", 500)
+      console.log(`${err}\nError while getting comment from db`)
+      throw new ErrorResponse("Failed to getting comment from db", 500)
+    })
+
+export const DeleteCommentById = async id =>
+  await Comment.findByIdAndDelete(id)
+    .exec()
+    .catch(err => {
+      console.log(`${err}\nError while deleting comment from db`)
+      throw new ErrorResponse("Failed to deleting comment from db", 500)
     })
