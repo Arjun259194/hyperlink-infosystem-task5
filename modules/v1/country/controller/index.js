@@ -1,4 +1,4 @@
-import Encryption from "../../../../libs/enc.js";
+import { EncRes } from "../../../../libs/enc.js";
 import { GetAllCountries } from "../model/index.js";
 
 export default class CountryController {
@@ -9,17 +9,9 @@ export default class CountryController {
    *
    * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
    */
-    static async getAll(req, res) {
-        const countries = await GetAllCountries()
-
-        const encres = Encryption.encrypt(JSON.stringify({
-            code: 200, 
-            success: true, 
-            data: {
-                countries
-            }
-        }))
-
-        res.status(200).send(encres)
-    }
+  static async getAll(_, res) {
+    const countries = await GetAllCountries()
+    const encres = EncRes("countries found", 200, { countries })
+    res.status(200).send(encres)
+  }
 }

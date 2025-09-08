@@ -1,7 +1,7 @@
 import { LoginJson, UserJson } from "../validation.js"
 import ErrorResponse from "../../../../middleware/globalErrorHandler.js"
 import { FindUserByEmail, NewUser } from "../model/index.js"
-import Encryption from "../../../../libs/enc.js"
+import { EncRes } from "../../../../libs/enc.js"
 import PasswordHashing from "../../../../libs/hash.js"
 import { JwtToken } from "../../../../libs/jwt.js"
 
@@ -14,7 +14,7 @@ export default class AuthController {
    * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
    */
   static async signup(req, res) {
-    if(!req.body) throw new ErrorResponse("Body not found", 400)
+    if (!req.body) throw new ErrorResponse("Body not found", 400)
     const userjson = new UserJson(req.body)
 
     const existingUser = await FindUserByEmail(userjson.data.email)
@@ -26,16 +26,7 @@ export default class AuthController {
 
     const STATUS = 201
 
-    const encres = Encryption.encrypt(
-      JSON.stringify({
-        code: STATUS,
-        success: true,
-        message: "User created",
-        data: {
-          user: user.toObject(),
-        },
-      })
-    )
+    const encres = EncRes("User created", 201, { user: user.toObject() })
 
     res.status(STATUS).send(encres)
   }
@@ -47,7 +38,7 @@ export default class AuthController {
    * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
    */
   static async login(req, res) {
-    if(!req.body) throw new ErrorResponse("Body not found", 400)
+    if (!req.body) throw new ErrorResponse("Body not found", 400)
     const loginjson = new LoginJson(req.body)
 
     const user = await FindUserByEmail(loginjson.data.email)
@@ -65,13 +56,7 @@ export default class AuthController {
 
     console.log("token:", token)
 
-    const encres = Encryption.encrypt(
-      JSON.stringify({
-        code: 200,
-        success: true,
-        token,
-      })
-    )
+    const encres = EncRes("Logged in", 200, { token })
 
     const ONEDAY = 24 * 60 * 60 * 1000 // 1 day in milliseconds
 

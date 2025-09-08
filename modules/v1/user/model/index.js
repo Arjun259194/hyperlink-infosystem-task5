@@ -1,6 +1,7 @@
 import User from "../../../../database/models/User.js"
 import ErrorResponse from "../../../../middleware/globalErrorHandler.js"
-import { PaginationQuery, UserUpdate } from "../validation.js"
+import { UserUpdate } from "../validation.js"
+import { PaginationQuery } from "../../validation.js"
 
 /** * @param {string} id */
 export const FindUserById = async id => await User.findById(id, {is_deleted: false}).select("-password -is_deleted").exec()

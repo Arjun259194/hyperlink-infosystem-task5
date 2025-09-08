@@ -8,5 +8,7 @@ postRouter.put("/", PostController.update)
 postRouter.get("/", PostController.getAllPost)
 postRouter.get("/:id", PostController.getPost)
 postRouter.delete("/:id", PostController.delete)
+postRouter.post("/:id/like", PostController.like)
+postRouter.post("/:id/dislike", PostController.dislike)
 
 export default postRouter

@@ -5,7 +5,6 @@ export const PaginationQueryValidator = z.object({
   limit: z.coerce.number().int().min(1).default(5).catch(5),
 })
 
-
 /**
  * @typedef {z.infer<typeof PaginationQueryValidator>} Pagination
  */

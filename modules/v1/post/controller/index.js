@@ -1,9 +1,11 @@
-import Encryption from "../../../../libs/enc.js"
+import { EncRes } from "../../../../libs/enc.js"
 import {
   DeletePostById,
+  DislikePost,
   FindPostById,
   FindPostByIdAndUpdate,
   GetPostPagination,
+  LikePost,
   NewPost,
 } from "../model/index.js"
 import { PostJson, PostUpdateJson } from "../validation.js"
@@ -30,16 +32,7 @@ export default class PostController {
 
     const { password, ...postres } = post
 
-    const encres = Encryption.encrypt(
-      JSON.stringify({
-        code: 201,
-        success: true,
-        message: "Post created",
-        data: {
-          post: postres,
-        },
-      })
-    )
+    const encres = EncRes("Post created", 201, { post: postres })
 
     res.status(201).send(encres)
   }
@@ -63,16 +56,7 @@ export default class PostController {
 
     const updatedpost = await FindPostByIdAndUpdate(postupdate)
 
-    const encres = Encryption.encrypt(
-      JSON.stringify({
-        code: 200,
-        success: true,
-        message: "Post Updated",
-        data: {
-          post: updatedpost,
-        },
-      })
-    )
+    const encres = EncRes("Post Updated", 200, { post: updatedpost })
 
     res.status(200).send(encres)
 
@@ -94,14 +78,7 @@ export default class PostController {
     const post = await FindPostById(id)
     if (!post) throw new ErrorResponse("Post not found")
 
-    const encres = Encryption.encrypt(
-      JSON.stringify({
-        code: 200,
-        success: true,
-        message: "Post found",
-        data: { post },
-      })
-    )
+    const encres = EncRes("Post found", 200, { post })
 
     res.status(200).send(encres)
   }
@@ -115,20 +92,11 @@ export default class PostController {
    */
   static async getAllPost(req, res) {
     const pagination = new PaginationQuery(req.query)
+
     const posts = await GetPostPagination(pagination)
     if (posts.length <= 0) throw new ErrorResponse("No Post Found", 404)
 
-    const encres = Encryption.encrypt(
-      JSON.stringify({
-        code: 200,
-        message: "Posts found",
-        success: true,
-        ...pagination.data,
-        data: {
-          posts,
-        },
-      })
-    )
+    const encres = EncRes("Posts found", 200, { ...pagination.data, posts })
 
     res.status(200).send(encres)
   }
@@ -148,8 +116,52 @@ export default class PostController {
     if (!id || id === "" || id.length <= 0)
       new ErrorResponse("bad request, user id not found or valid", 400)
     const post = await DeletePostById(id, userId)
-    if(!post) throw new ErrorResponse("Post not found", 404)
+    if (!post) throw new ErrorResponse("Post not found", 404)
 
     res.sendStatus(204)
+  }
+
+  /**
+   *
+   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
+   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
+   *
+   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
+   */
+  static async like(req, res) {
+    const userId = req.userId
+    if (!userId) throw new ErrorResponse("User ID missing from token", 401)
+
+    const id = req.params.id
+    if (!id || id === "" || id.length <= 0)
+      new ErrorResponse("bad request, user id not found or valid", 400)
+
+    const likeobj = await LikePost(id, userId)
+
+    const encres = EncRes("post liked", 200, likeobj)
+
+    res.status(200).send(encres)
+  }
+
+  /**
+   *
+   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
+   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
+   *
+   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
+   */
+  static async dislike(req, res) {
+    const userId = req.userId
+    if (!userId) throw new ErrorResponse("User ID missing from token", 401)
+
+    const id = req.params.id
+    if (!id || id === "" || id.length <= 0)
+      new ErrorResponse("bad request, user id not found or valid", 400)
+
+    const likeobj = await DislikePost(id, userId)
+
+    const encres = EncRes("post liked", 200, likeobj)
+
+    res.status(200).send(encres)
   }
 }

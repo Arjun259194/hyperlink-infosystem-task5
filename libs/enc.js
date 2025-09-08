@@ -29,3 +29,7 @@ export default class Encryption {
     return cryptLib.decrypt(encryption, Encryption.shaKey, env.IV)
   }
 }
+
+export function EncRes(message, code = 200, data = {}) {
+  return Encryption.encrypt(JSON.stringify({ success: true, code, message, data }))
+}

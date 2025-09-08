@@ -1,4 +1,4 @@
-import Encryption from "../../../../libs/enc.js"
+import  { EncRes } from "../../../../libs/enc.js"
 import ErrorResponse from "../../../../middleware/globalErrorHandler.js"
 import {
   FindAndDeleteUserById,
@@ -26,16 +26,7 @@ export default class UserController {
     const user = await FindUserById(userId)
     if (!user) throw new ErrorResponse("User not found", 404)
 
-    const encres = Encryption.encrypt(
-      JSON.stringify({
-        code: 200,
-        success: true,
-        message: "User found",
-        data: {
-          user: user.toObject(),
-        },
-      })
-    )
+    const encres = EncRes("User found", 200, { user: user.toObject() })
 
     res.status(200).send(encres)
   }
@@ -58,16 +49,7 @@ export default class UserController {
 
     const updateduser = await FindUserByIdAndUpdate(userId, userupdate)
 
-    const encres = Encryption.encrypt(
-      JSON.stringify({
-        code: 200,
-        success: true,
-        message: "User Updated",
-        data: {
-          user: updateduser,
-        },
-      })
-    )
+    const encres = EncRes("User Updated", 200, { user: updateduser })
 
     res.status(200).send(encres)
 
@@ -86,17 +68,10 @@ export default class UserController {
     const users = await GetUsersPagination(pagination)
     if (users.length <= 0) throw new ErrorResponse("No User Found", 404)
 
-    const encres = Encryption.encrypt(
-      JSON.stringify({
-        code: 200,
-        message: "Users found",
-        success: true,
-        ...pagination.data,
-        data: {
-          users,
-        },
-      })
-    )
+    const encres = EncRes("Users found", 200, {
+      ...pagination.data,
+      users
+    })
 
     res.status(200).send(encres)
   }
@@ -119,16 +94,7 @@ export default class UserController {
     const users = await SearchUser(search)
     if (users.length <= 0) throw new ErrorResponse("No User Found", 404)
 
-    const encres = Encryption.encrypt(
-      JSON.stringify({
-        code: 200,
-        message: "Users found",
-        success: true,
-        data: {
-          users,
-        },
-      })
-    )
+    const encres = EncRes("Users found", 200, { users })
 
     res.status(200).send(encres)
   }

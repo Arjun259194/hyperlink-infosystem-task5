@@ -27,7 +27,7 @@ export class PostJson {
 }
 
 const PostUpdateSchema = PostSchema.partial().extend({
-    post_id: z.string()
+  post_id: z.string(),
 })
 
 /**
