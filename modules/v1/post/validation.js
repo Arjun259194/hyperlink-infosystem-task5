@@ -47,3 +47,25 @@ export class PostUpdateJson {
     this.data = parsedData.data
   }
 }
+
+const PostRepostSchmea = z.object({
+  post_id: z.string(),
+  user_id: z.string(),
+  thought: z.string().optional()
+})
+
+/** @typedef {z.infer<typeof PostRepostSchmea>} TPostRepostJson */
+
+export class PostRepostJson {
+  #schema = PostRepostSchmea 
+  constructor(data) {
+    const parsedData = this.#schema.safeParse(data)
+    if (!parsedData.success)
+      throw new ErrorResponse(
+        `Not valid data for repost in request: ${parsedData.error.issues[0].message}`,
+        400
+      )
+    /** @type {TPostRepostJson} */
+    this.data = parsedData.data
+  }
+}

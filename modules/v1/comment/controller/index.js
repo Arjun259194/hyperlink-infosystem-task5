@@ -3,14 +3,10 @@ import ErrorResponse from "../../../../middleware/globalErrorHandler.js"
 import { DeleteCommentById, GetCommentById, NewComment } from "../model/index.js"
 import { CommentJson, CommentUpdateJson } from "../validation.js"
 
+/** @typedef {(req: import("express").Request, res: import("express").Response) => Promise<void>} ExpressFn */
+
 export default class CommentController {
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async create(req, res) {
     const userId = req.userId
     if (!userId) throw new ErrorResponse("User ID missing from token", 401)
@@ -20,13 +16,7 @@ export default class CommentController {
     res.status(200).send(encres)
   }
 
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async update(req, res) {
     const userId = req.userId
     if (!userId) throw new ErrorResponse("User ID missing from token", 401)
@@ -56,13 +46,7 @@ export default class CommentController {
     res.status(200).send(encres)
   }
 
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async getById(req, res) {
     const id = req.body.id
     if (!id || id === "" || typeof id !== "string")
@@ -74,13 +58,7 @@ export default class CommentController {
     res.status(200).send(encres)
   }
 
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async delete(req, res) {
     const userId = req.userId
     if (!userId) throw new ErrorResponse("User ID missing from token", 401)

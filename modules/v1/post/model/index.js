@@ -1,7 +1,9 @@
 import Like from "../../../../database/models/Like.js"
 import Post from "../../../../database/models/Post.js"
+import Repost from "../../../../database/models/Repost.js"
 import ErrorResponse from "../../../../middleware/globalErrorHandler.js"
 import { PaginationQuery } from "../../validation.js"
+import { PostRepostJson } from "../validation.js"
 
 export const FindPostById = async id =>
   await Post.findById(id)
@@ -108,4 +110,41 @@ export const DislikePost = async (post_id, user_id) => {
 
   await newLike.save()
   return newLike.toObject()
+}
+
+/**
+ * @param {PostRepostJson} arg1
+ */
+export const NewRepostByPostId = async ({ data: { post_id, user_id, thought } }) => {
+  const post = await FindPostById(post_id)
+  if (!post) throw new ErrorResponse("No post found", 404)
+
+  const newRepost = new Repost({ post_id, user_id, thought })
+
+  await newRepost.save().catch(err => {
+    console.log(`Error while saving repost in db: ${err}`)
+    throw new ErrorResponse("internal server error while saving repost", 500)
+  })
+
+  return newRepost.toObject()
+}
+
+/** * @param {string} id */
+export const DeleteRepostById = async id => {
+  return await Repost.findOneAndDelete({ _id: id })
+    .exec()
+    .catch(err => {
+      console.log(`Error while deleting repost in db: ${err}`)
+      throw new ErrorResponse("internal server error while deleting repost", 500)
+    })
+}
+
+/** * @param {string} id */
+export const GetRepostById = async id => {
+  return await Repost.findById(id)
+    .exec()
+    .catch(err => {
+      console.log(`Error while fetching repost from db: ${err}`)
+      throw new ErrorResponse("internal server error while fetching repost", 500)
+    })
 }

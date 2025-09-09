@@ -3,3 +3,4 @@ node_modules/
 encTest.mjs
 decTest.mjs
 IGNORE_COPY
+dev-logs/

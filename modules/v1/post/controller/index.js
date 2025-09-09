@@ -1,25 +1,23 @@
 import { EncRes } from "../../../../libs/enc.js"
 import {
   DeletePostById,
+  DeleteRepostById,
   DislikePost,
   FindPostById,
   FindPostByIdAndUpdate,
   GetPostPagination,
   LikePost,
   NewPost,
+  NewRepostByPostId,
 } from "../model/index.js"
-import { PostJson, PostUpdateJson } from "../validation.js"
+import { PostJson, PostRepostJson, PostUpdateJson } from "../validation.js"
 import ErrorResponse from "../../../../middleware/globalErrorHandler.js"
 import { PaginationQuery } from "../../validation.js"
 
+/** @typedef {(req: import("express").Request, res: import("express").Response) => Promise<void>} ExpressFn */
+
 export default class PostController {
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async create(req, res) {
     const userId = req.userId
     if (!userId) throw new ErrorResponse("User ID missing from token", 401)
@@ -37,13 +35,7 @@ export default class PostController {
     res.status(201).send(encres)
   }
 
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async update(req, res) {
     if (!req.body) throw new ErrorResponse("No body provided in request header ")
 
@@ -63,13 +55,7 @@ export default class PostController {
     return
   }
 
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async getPost(req, res) {
     const id = req.params.id
     if (!id || id === "" || id.length <= 0)
@@ -83,13 +69,7 @@ export default class PostController {
     res.status(200).send(encres)
   }
 
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async getAllPost(req, res) {
     const pagination = new PaginationQuery(req.query)
 
@@ -101,13 +81,7 @@ export default class PostController {
     res.status(200).send(encres)
   }
 
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async delete(req, res) {
     const userId = req.userId
     if (!userId) throw new ErrorResponse("User ID missing from token", 401)
@@ -121,13 +95,7 @@ export default class PostController {
     res.sendStatus(204)
   }
 
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async like(req, res) {
     const userId = req.userId
     if (!userId) throw new ErrorResponse("User ID missing from token", 401)
@@ -143,13 +111,7 @@ export default class PostController {
     res.status(200).send(encres)
   }
 
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async dislike(req, res) {
     const userId = req.userId
     if (!userId) throw new ErrorResponse("User ID missing from token", 401)
@@ -163,5 +125,31 @@ export default class PostController {
     const encres = EncRes("post liked", 200, likeobj)
 
     res.status(200).send(encres)
+  }
+
+  /** @type {ExpressFn} */
+  static async repost(req, res) {
+    const user_id = req.userId
+    if (!user_id) throw new ErrorResponse("User ID missing from token", 401)
+
+    const repostjson = new PostRepostJson({ ...req.body, user_id })
+
+    const repost = await NewRepostByPostId(repostjson)
+
+    const encres = EncRes("Repost created", 201, { repost })
+
+    res.status(201).send(encres)
+  }
+
+  /** @type {ExpressFn} */
+  static async removerepost(req, res) {
+    const id = req.params.id
+    if (!id || id === "" || id.length <= 0)
+      new ErrorResponse("bad request, user id not found or valid", 400)
+
+    const repost = await DeleteRepostById(id)
+    if (!repost) throw new ErrorResponse("Repost not found", 404)
+
+    res.sendStatus(204)
   }
 }

@@ -11,14 +11,11 @@ import { UserUpdate } from "../validation.js"
 import { PaginationQuery } from "../../validation.js"
 import z from "zod"
 
+
+/** @typedef {(req: import("express").Request, res: import("express").Response) => Promise<void>} ExpressFn */
+
 export default class UserController {
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async profile(req, res) {
     const userId = req.userId
     if (!userId) throw new ErrorResponse("User ID missing from token", 401)
@@ -31,13 +28,7 @@ export default class UserController {
     res.status(200).send(encres)
   }
 
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async update(req, res) {
     if (!req.body) throw new ErrorResponse("No body provided in request header ")
     const userupdate = new UserUpdate(req.body)
@@ -56,13 +47,7 @@ export default class UserController {
     return
   }
 
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async getUsers(req, res) {
     const pagination = new PaginationQuery(req.query)
     const users = await GetUsersPagination(pagination)
@@ -76,13 +61,7 @@ export default class UserController {
     res.status(200).send(encres)
   }
 
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async search(req, res) {
     const queryparsed = z.string().min(1).safeParse(req.query?.q)
     if (!queryparsed.success) {
@@ -99,13 +78,7 @@ export default class UserController {
     res.status(200).send(encres)
   }
 
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async delete(req, res) {
     const userId = req.userId
     if (!userId) throw new ErrorResponse("User ID missing from token", 401)

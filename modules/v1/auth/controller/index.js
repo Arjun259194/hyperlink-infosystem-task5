@@ -5,14 +5,11 @@ import { EncRes } from "../../../../libs/enc.js"
 import PasswordHashing from "../../../../libs/hash.js"
 import { JwtToken } from "../../../../libs/jwt.js"
 
+
+/** @typedef {(req: import("express").Request, res: import("express").Response) => Promise<void>} ExpressFn */
+
 export default class AuthController {
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async signup(req, res) {
     if (!req.body) throw new ErrorResponse("Body not found", 400)
     const userjson = new UserJson(req.body)
@@ -30,13 +27,7 @@ export default class AuthController {
 
     res.status(STATUS).send(encres)
   }
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  /** @type {ExpressFn} */
   static async login(req, res) {
     if (!req.body) throw new ErrorResponse("Body not found", 400)
     const loginjson = new LoginJson(req.body)
@@ -71,13 +62,8 @@ export default class AuthController {
       .status(200)
       .send(encres)
   }
-  /**
-   *
-   * @param {import('express').Request} req - The Express request object, contains post data in req.body.
-   * @param {import('express').Response} res - The Express response object, used to send back the created post or errors.
-   *
-   * @returns {Promise<void>} - Sends JSON response with the created post or an error status.
-   */
+  
+  /** @type {ExpressFn} */
   static async logout(_, res) {
     res.clearCookie("auth").sendStatus(200)
   }
