@@ -9,6 +9,7 @@ export const FindPostById = async id =>
   await Post.findById(id)
     .populate("likes")
     .populate("comments")
+    .populate("reposts")
     .exec()
     .catch(err => {
       console.log(`Failed to fetch post from database: ${err}`)
@@ -49,6 +50,7 @@ export const GetPostPagination = async ({ data: { limit, page } }) =>
   await Post.find()
     .populate("likes")
     .populate("comments")
+    .populate("reposts")
     .skip((page - 1) * limit)
     .limit(limit)
     .exec()

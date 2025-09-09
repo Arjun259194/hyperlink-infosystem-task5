@@ -38,10 +38,27 @@ UserSchema.virtual("comments", {
   ref: "Comment",
   localField: "_id",
   foreignField: "user_id",
-  justOne: true,
+  justOne: false,
+})
+
+UserSchema.virtual("reposts", {
+  ref: "Repost",
+  localField: "_id",
+  foreignField: "user_id",
+  justOne: false,
+})
+
+UserSchema.virtual("device", {
+  ref: "Device",
+  localField: "_id",
+  foreignField: "user_id",
+  justOne: false,
 })
 
 UserSchema.index({ first_name: "text", last_name: "text", email: "text" })
+
+UserSchema.set("toObject", { virtuals: true })
+UserSchema.set("toJSON", { virtuals: true })
 
 const User = model("User", UserSchema)
 

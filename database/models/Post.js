@@ -22,7 +22,14 @@ PostSchema.virtual("likes", {
 })
 
 PostSchema.virtual("comments", {
-  ref: "Comment", 
+  ref: "Comment",
+  localField: "_id",
+  foreignField: "post_id",
+  justOne: false,
+})
+
+PostSchema.virtual("reposts", {
+  ref: "Repost",
   localField: "_id",
   foreignField: "post_id",
   justOne: false,

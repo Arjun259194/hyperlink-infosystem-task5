@@ -4,7 +4,14 @@ import { UserUpdate } from "../validation.js"
 import { PaginationQuery } from "../../validation.js"
 
 /** * @param {string} id */
-export const FindUserById = async id => await User.findById(id, {is_deleted: false}).select("-password -is_deleted").exec()
+export const FindUserById = async id =>
+  await User.findById(id, { is_deleted: false })
+    .populate("likes")
+    .populate("comments")
+    .populate("reposts")
+    .populate("device")
+    .select("-password -is_deleted")
+    .exec()
 
 /**
  *
@@ -30,7 +37,11 @@ export async function FindUserByIdAndUpdate(id, updatedata) {
  * @param {PaginationQuery} pagination
  */
 export const GetUsersPagination = async ({ data: { limit, page } }) =>
-  await User.find({is_deleted: false})
+  await User.find({ is_deleted: false })
+    .populate("likes")
+    .populate("comments")
+    .populate("reposts")
+    .populate("device")
     .select("-password -is_deleted")
     .skip((page - 1) * limit)
     .limit(limit)
@@ -44,6 +55,7 @@ export const GetUsersPagination = async ({ data: { limit, page } }) =>
 export const SearchUser = async str =>
   await User.find({ $text: { $search: str }, is_deleted: false })
     .select("-password -is_deleted")
+    .select("_id name email")
     .limit(50)
     .exec()
     .catch(err => {
