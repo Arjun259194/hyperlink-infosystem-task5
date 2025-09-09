@@ -8,13 +8,22 @@ import Like from "../models/Like.js"
 import Repost from "../models/Repost.js"
 import Device from "../models/Device.js"
 import { env } from "../../env.js"
-import { countriesData } from "./country_mock.js" // Your full 247 countries data here
-import { userdata } from "./user_mock.js" // If available, or will generate
+import { countriesData } from "./country_mock.js"
+import { userdata } from "./user_mock.js"
 
 const MONGO_URI = env.DATABASE_URI
 
 // Helper to generate ObjectId strings for references
 const generateObjectId = () => new Types.ObjectId()
+
+// Helper to get random number between min and max (inclusive)
+const getRandomCount = (min = 2, max = 10) => Math.floor(Math.random() * (max - min + 1)) + min
+
+// Helper to get random unique users from array
+const getRandomUsers = (users, count) => {
+  const shuffled = [...users].sort(() => 0.5 - Math.random())
+  return shuffled.slice(0, count)
+}
 
 // Generate more users if userdata not provided or to expand
 const generateUsers = (count = 20) => {
@@ -82,47 +91,54 @@ async function seedAll() {
     const createdPosts = await Post.insertMany(posts)
     console.log(`- ${createdPosts.length} posts seeded`)
 
-    // Generate comments - 3 comments per post
+    // Generate comments - random 2-10 comments per post from random users
     let comments = []
     createdPosts.forEach(post => {
-      for (let j = 0; j < 3; j++) {
-        const commenter =
-          createdUsers[(post._id.toString().charCodeAt(0) + j) % createdUsers.length]
+      const commentCount = getRandomCount(2, 10)
+      const randomCommenters = getRandomUsers(createdUsers, commentCount)
+      
+      randomCommenters.forEach((commenter, j) => {
         comments.push({
           post_id: post._id,
           user_id: commenter._id,
-          content: `Comment ${j + 1} on post ${post.title}`,
+          content: `Random comment ${j + 1} on post "${post.title}" by ${commenter.first_name}`,
           created_at: new Date(),
           updated_at: new Date(),
         })
-      }
+      })
     })
     const createdComments = await Comment.insertMany(comments)
     console.log(`- ${createdComments.length} comments seeded`)
 
-    // Generate likes - 2 likes per post, mixed states
+    // Generate likes - random 2-10 likes per post from random users (mix of liked/disliked)
     let likes = []
-    createdPosts.forEach((post, idx) => {
-      for (let k = 0; k < 2; k++) {
-        const liker = createdUsers[(idx + k) % createdUsers.length]
+    createdPosts.forEach(post => {
+      const likeCount = getRandomCount(2, 10)
+      const randomLikers = getRandomUsers(createdUsers, likeCount)
+      
+      randomLikers.forEach((liker, k) => {
         likes.push({
           post_id: post._id,
           user_id: liker._id,
-          state: k % 2 === 0 ? "Liked" : "Disliked",
+          status: Math.random() > 0.2 ? "Liked" : "Disliked", // 80% liked, 20% disliked
         })
-      }
+      })
     })
     const createdLikes = await Like.insertMany(likes)
     console.log(`- ${createdLikes.length} likes seeded`)
 
-    // Generate reposts - 1 repost per post
+    // Generate reposts - random 2-10 reposts per post from random users
     let reposts = []
-    createdPosts.forEach((post, idx) => {
-      const reposter = createdUsers[idx % createdUsers.length]
-      reposts.push({
-        post_id: post._id,
-        user_id: reposter._id,
-        thought: `Thoughts on reposting post ${post.title}`,
+    createdPosts.forEach(post => {
+      const repostCount = getRandomCount(2, 10)
+      const randomReposters = getRandomUsers(createdUsers, repostCount)
+      
+      randomReposters.forEach((reposter, r) => {
+        reposts.push({
+          post_id: post._id,
+          user_id: reposter._id,
+          thought: `Repost thought ${r + 1} on "${post.title}" by ${reposter.first_name}`,
+        })
       })
     })
     const createdReposts = await Repost.insertMany(reposts)
@@ -147,6 +163,16 @@ async function seedAll() {
     })
     const createdDevices = await Device.insertMany(devices)
     console.log(`- ${createdDevices.length} devices seeded`)
+
+    console.log("\n🎉 All data seeded successfully!")
+    console.log(`📊 Summary:
+    - ${countriesData.length} countries
+    - ${createdUsers.length} users  
+    - ${createdPosts.length} posts
+    - ${createdComments.length} comments (avg: ${Math.round(createdComments.length / createdPosts.length)} per post)
+    - ${createdLikes.length} likes/dislikes (avg: ${Math.round(createdLikes.length / createdPosts.length)} per post)
+    - ${createdReposts.length} reposts (avg: ${Math.round(createdReposts.length / createdPosts.length)} per post)
+    - ${createdDevices.length} devices`)
 
     process.exit(0)
   } catch (err) {
