@@ -39,10 +39,12 @@ paths:
             text/plain:
               schema:
                 type: string
-                description: Encrypted response containing user data
+                description: Encrypted response containing user data without password
         '400':
+          description: Body not found
           $ref: '#/components/responses/BadRequest'
         '409':
+          description: User already exists in database
           $ref: '#/components/responses/Conflict'
 
   /auth/login:
@@ -58,7 +60,17 @@ paths:
           text/plain:
             schema:
               type: string
-              description: Encrypted JSON string containing login credentials
+              description: Encrypted JSON string containing login credentials and device info
+              example: {
+                "cred": {
+                  "email": "user@example.com",
+                  "password": "password123"
+                },
+                "device": {
+                  "device_id": "abc123",
+                  "device_type": "mobile"
+                }
+              }
       responses:
         '200':
           description: Login successful
@@ -66,21 +78,28 @@ paths:
             Set-Cookie:
               schema:
                 type: string
-                example: auth=<token>; HttpOnly; Secure; Path=/
+                example: auth=<token>; HttpOnly; Secure; Path=/; Expires=1d; Max-Age=86400000
           content:
             text/plain:
               schema:
                 type: string
-                description: Encrypted response containing auth token
+                description: Encrypted response containing auth token and device info
+        '400':
+          description: Body not found
+          $ref: '#/components/responses/BadRequest'
         '401':
+          description: Invalid credentials
           $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User not found by email
+          $ref: '#/components/responses/NotFound'
 
   /auth/logout:
     post:
       tags:
         - Authentication
       summary: User logout
-      description: Clear authentication cookie and logout user
+      description: Clear authentication cookie and delete device info
       responses:
         '200':
           description: Logged out successfully
@@ -89,6 +108,9 @@ paths:
               schema:
                 type: string
                 example: auth=; HttpOnly; Secure; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT
+        '401':
+          description: User ID missing from token
+          $ref: '#/components/responses/Unauthorized'
 
   # User Endpoints
   /user:
@@ -276,6 +298,44 @@ paths:
         '200':
           description: Post disliked successfully
 
+  /post/repost:
+    post:
+      tags:
+        - Posts
+      summary: Repost another user's post
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+              description: Encrypted JSON containing repost data
+      responses:
+        '200':
+          description: Post reposted successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Encrypted response containing repost data
+
+  /post/repost/{id}:
+    delete:
+      tags:
+        - Posts
+      summary: Remove a repost
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Repost removed successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   # Comment Endpoints
   /comment:
     post:
@@ -431,14 +491,30 @@ components:
     LoginRequest:
       type: object
       required:
-        - email
-        - password
+        - cred
+        - device
       properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
+        cred:
+          type: object
+          required:
+            - email
+            - password
+          properties:
+            email:
+              type: string
+              format: email
+            password:
+              type: string
+        device:
+          type: object
+          required:
+            - device_id
+            - device_type
+          properties:
+            device_id:
+              type: string
+            device_type:
+              type: string
 
     UserUpdate:
       type: object
@@ -514,6 +590,20 @@ components:
           type: string
         content:
           type: string
+
+    PostRepost:
+      type: object
+      required:
+        - post_id
+        - user_id
+      properties:
+        post_id:
+          type: string
+        user_id:
+          type: string
+        thought:
+          type: string
+          description: Optional comment on the repost
 
     Error:
       type: object
